@@ -2,20 +2,43 @@ import requests
 import json
 import sqlite3
 
-conn = sqlite3.connect("Cities")
-c=conn.execute("""CREATE TABLE IF NOT EXISTS CityInfo (
+conn = sqlite3.connect("Chuck_Norris_Jokes")
+c = conn.execute("""CREATE TABLE IF NOT EXISTS Jokes (
                     ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    City VARCHAR(50),
-                    weather VARCHAR(10),
-                    timezone VARCHAR(100),
-                    coordinates VARCHAR(100))""")
+                    category VARCHAR(50),
+                    joke VARCHAR(500),
+                    url VARCHAR(500),
+                    iconUrl VARCHAR(500))""")
 
-jsonFile = open("jsonInfo.txt",'w')
+jsonFile = open("jsonJokes.txt", 'w')
 
-key='3373b08e49b718d1b3073d16d01da1e8'
-city = input("please enter city:")
+jokeCategories = [
+    "animal",
+    "career",
+    "celebrity",
+    "dev",
+    "explicit",
+    "fashion",
+    "food",
+    "history",
+    "money",
+    "movie",
+    "music",
+    "political",
+    "religion",
+    "science",
+    "sport",
+    "travel"
+]
 
-r = requests.get( f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={key}&units=metric')
+print("joke categories are:")
+for category in jokeCategories:
+    print(category)
+
+category = input("please enter Chuck norris joke category you want displayed: ")
+category = category.lower()
+
+r = requests.get(f'https://api.chucknorris.io/jokes/random?category={category}')
 # print(r.status_code)
 # print(r.headers)
 # print(r.headers['Content-Type'])
@@ -24,23 +47,24 @@ r = requests.get( f'http://api.openweathermap.org/data/2.5/weather?q={city}&appi
 txt = r.json()
 res = json.dumps(txt, indent=4)
 
-jsonFile.write(f"{city}: {res}")
+jsonFile.write(f"{category}: {res}")
 
-# print(res)
-# print(city)
-# print(f"lon:{txt['coord']['lon']}, lat{txt['coord']['lat']}")
-# print(txt["weather"][0]["main"])
-# print(txt["timezone"])
+print(res)
+print(category)
+print(f"lon:{txt['id']}")
+print(txt["value"])
+print(txt["url"])
+
 list = []
 
-tuple = (f"{city}",
-        f"{txt['weather'][0]['main']}",
-        f"{txt['timezone']}",
-        f"lon:{txt['coord']['lon']}, lat{txt['coord']['lat']}")
+tuple = (f"{category}",
+         f"{txt['icon_url']}",
+         f"{txt['url']}",
+         f"lon:{txt['value']}")
 for i in tuple:
     list.append(i)
 
-conn.execute("INSERT INTO CityInfo(City, weather, timezone, coordinates) VALUES (?, ?, ?, ?)", tuple)
+conn.execute("INSERT INTO Jokes(category, iconUrl, url, joke) VALUES (?, ?, ?, ?)", tuple)
 conn.commit()
 
 print(tuple)
